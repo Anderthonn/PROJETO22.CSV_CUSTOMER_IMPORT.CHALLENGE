@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.APPLICATION\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.APPLICATION.csproj" />
+    <ProjectReference Include="..\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.COMMON\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.COMMON.csproj" />
+    <ProjectReference Include="..\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.DOMAIN\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.DOMAIN.csproj" />
+    <ProjectReference Include="..\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

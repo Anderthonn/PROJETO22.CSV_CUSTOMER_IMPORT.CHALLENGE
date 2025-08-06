@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.COMMON\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.COMMON.csproj" />
+    <ProjectReference Include="..\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.DOMAIN\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.DOMAIN.csproj" />
+  </ItemGroup>
+
+</Project>
