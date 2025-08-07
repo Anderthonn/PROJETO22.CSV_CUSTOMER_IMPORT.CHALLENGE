@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.APPLICATION\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.APPLICATION.csproj" />
     <ProjectReference Include="..\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.csproj" />
   </ItemGroup>

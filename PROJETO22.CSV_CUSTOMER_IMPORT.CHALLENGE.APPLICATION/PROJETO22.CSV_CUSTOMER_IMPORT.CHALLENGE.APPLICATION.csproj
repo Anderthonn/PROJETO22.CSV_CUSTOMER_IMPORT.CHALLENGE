@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MediatR" Version="13.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.COMMON\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.COMMON.csproj" />
     <ProjectReference Include="..\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.DOMAIN\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.DOMAIN.csproj" />
   </ItemGroup>

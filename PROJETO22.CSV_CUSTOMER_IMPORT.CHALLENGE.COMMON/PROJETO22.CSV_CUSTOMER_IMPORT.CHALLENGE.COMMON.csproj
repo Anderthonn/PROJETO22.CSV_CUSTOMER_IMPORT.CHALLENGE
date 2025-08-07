@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="15.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.DOMAIN\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.DOMAIN.csproj" />
   </ItemGroup>
 
