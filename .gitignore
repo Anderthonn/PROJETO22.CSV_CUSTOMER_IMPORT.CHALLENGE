@@ -79,9 +79,6 @@ TestResult.xml
 #  Entity Framework Core
 # ======================================
 
-# Migrations geradas
-**/Migrations/*
-
 # arquivos de modelo de banco de dados
 *.dbmdl
 

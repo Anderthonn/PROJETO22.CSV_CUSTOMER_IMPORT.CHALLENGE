@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.APPLICATION.Handlers.Commands;
 using PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.APPLICATION.Handlers.Queries;
+using PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.COMMON.Parameters;
 
 namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.API.Controllers
 {
@@ -18,8 +19,10 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.API.Controllers
 
         [HttpPost("importar")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> Import([FromForm] IFormFile file)
+        public async Task<IActionResult> Import([FromForm] FileUploadParameter fileUploadRequest)
         {
+            IFormFile file = fileUploadRequest.File;
+
             if (file == null || file.Length == 0)
                 return BadRequest("CSV file is required.");
 

@@ -34,94 +34,98 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Workers
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            string queueName = _queueUrl.Split('/').Last();
-            await _monitoring.CreateFailureAlarmAsync("ConsecutiveFailures");
-            await _monitoring.CreateQueueBacklogAlarmAsync("QueueBacklog", queueName, 10);
-            await _monitoring.CreateExceptionAlarmAsync("CriticalExceptions");
-
-            while (!cancellationToken.IsCancellationRequested)
+            try
             {
-                ReceiveMessageResponse response = await _amazonSQS.ReceiveMessageAsync(new ReceiveMessageRequest
-                {
-                    QueueUrl = _queueUrl,
-                    MaxNumberOfMessages = 5
-                }, cancellationToken);
+                string queueName = _queueUrl.Split('/').Last();
+                await _monitoring.CreateFailureAlarmAsync("ConsecutiveFailures");
+                await _monitoring.CreateQueueBacklogAlarmAsync("QueueBacklog", queueName, 10);
+                await _monitoring.CreateExceptionAlarmAsync("CriticalExceptions");
 
-                await Parallel.ForEachAsync(response.Messages,
-                new ParallelOptions
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    MaxDegreeOfParallelism = int.Parse(_degreeOfParallelism),
-                    CancellationToken = cancellationToken
-                },
-                async (message, token) =>
-                {
-                    CsvMessageDTO body = JsonSerializer.Deserialize<CsvMessageDTO>(message.Body)!;
-
-                    using IServiceScope scope = _scopeFactory.CreateScope();
-                    ICsvProcessorService processor = scope.ServiceProvider.GetRequiredService<ICsvProcessorService>();
-
-                    DateTime start = DateTime.UtcNow;
-                    try
+                    ReceiveMessageResponse response = await _amazonSQS.ReceiveMessageAsync(new ReceiveMessageRequest
                     {
-                        await _monitoring.LogAsync("CsvQueueWorker", $"Processing message {message.MessageId}", token);
-                        int imported = await processor.ProcessAsync(body, token);
-                        await _monitoring.PublishMetricAsync("RecordsImported", imported);
-                        await _amazonSQS.DeleteMessageAsync(_queueUrl, message.ReceiptHandle, token);
-                        await _monitoring.LogAsync("CsvQueueWorker", $"Processed message {message.MessageId} importing {imported} records", token);
-                    }
-                    catch (Exception ex)
-                    {
-                        await _monitoring.LogAsync("CsvQueueWorker", $"Error processing message {message.MessageId}: {ex.Message}", token);
-                        await _monitoring.PublishMetricAsync("Failures", 1);
-                        await _monitoring.PublishMetricAsync("CriticalExceptions", 1);
-                    }
-                    finally
-                    {
-                        double elapsed = (DateTime.UtcNow - start).TotalMilliseconds;
-                        await _monitoring.PublishMetricAsync("ProcessingTime", elapsed, StandardUnit.Milliseconds);
-                    }
-                });
-
-                if (!string.IsNullOrEmpty(_deadLetterQueueUrl))
-                {
-                    ReceiveMessageResponse dlqResponse = await _amazonSQS.ReceiveMessageAsync(new ReceiveMessageRequest
-                    {
-                        QueueUrl = _deadLetterQueueUrl,
+                        QueueUrl = _queueUrl,
                         MaxNumberOfMessages = 5
                     }, cancellationToken);
 
-                    foreach (Message dlqMessage in dlqResponse.Messages)
+                    await Parallel.ForEachAsync(response.Messages,
+                    new ParallelOptions
                     {
-                        ClientDTO record = JsonSerializer.Deserialize<ClientDTO>(dlqMessage.Body)!;
+                        MaxDegreeOfParallelism = int.Parse(_degreeOfParallelism),
+                        CancellationToken = cancellationToken
+                    },
+                    async (message, token) =>
+                    {
+                        CsvMessageDTO body = JsonSerializer.Deserialize<CsvMessageDTO>(message.Body)!;
 
                         using IServiceScope scope = _scopeFactory.CreateScope();
-                        IClientRepository repository = scope.ServiceProvider.GetRequiredService<IClientRepository>();
+                        ICsvProcessorService processor = scope.ServiceProvider.GetRequiredService<ICsvProcessorService>();
 
+                        DateTime start = DateTime.UtcNow;
                         try
                         {
-                            if (!await repository.ExistsByCpfAsync(record.Cpf, cancellationToken))
-                            {
-                                Client client = new Client(record.Name, record.Cpf, record.Email);
-                                await repository.AddAsync(client, cancellationToken);
-                                await _monitoring.PublishReprocessedRecordsMetricAsync(1);
-                                await _amazonSQS.DeleteMessageAsync(_deadLetterQueueUrl, dlqMessage.ReceiptHandle, cancellationToken);
-                                await _monitoring.LogAsync("CsvQueueWorker", $"Reprocessed record {record.Cpf}", cancellationToken);
-                            }
-                            else
-                            {
-                                await _amazonSQS.DeleteMessageAsync(_deadLetterQueueUrl, dlqMessage.ReceiptHandle, cancellationToken);
-                            }
+                            await _monitoring.LogAsync("CsvQueueWorker", $"Processing message {message.MessageId}", token);
+                            int imported = await processor.ProcessAsync(body, token);
+                            await _monitoring.PublishMetricAsync("RecordsImported", imported);
+                            await _amazonSQS.DeleteMessageAsync(_queueUrl, message.ReceiptHandle, token);
+                            await _monitoring.LogAsync("CsvQueueWorker", $"Processed message {message.MessageId} importing {imported} records", token);
                         }
                         catch (Exception ex)
                         {
-                            await _monitoring.LogAsync("CsvQueueWorker", $"Error reprocessing record {record.Cpf}: {ex.Message}", cancellationToken);
+                            await _monitoring.LogAsync("CsvQueueWorker", $"Error processing message {message.MessageId}: {ex.Message}", token);
                             await _monitoring.PublishMetricAsync("Failures", 1);
+                            await _monitoring.PublishMetricAsync("CriticalExceptions", 1);
+                        }
+                        finally
+                        {
+                            double elapsed = (DateTime.UtcNow - start).TotalMilliseconds;
+                            await _monitoring.PublishMetricAsync("ProcessingTime", elapsed, StandardUnit.Milliseconds);
+                        }
+                    });
+
+                    if (!string.IsNullOrEmpty(_deadLetterQueueUrl))
+                    {
+                        ReceiveMessageResponse dlqResponse = await _amazonSQS.ReceiveMessageAsync(new ReceiveMessageRequest
+                        {
+                            QueueUrl = _deadLetterQueueUrl,
+                            MaxNumberOfMessages = 5
+                        }, cancellationToken);
+
+                        foreach (Message dlqMessage in dlqResponse.Messages)
+                        {
+                            ClientDTO record = JsonSerializer.Deserialize<ClientDTO>(dlqMessage.Body)!;
+
+                            using IServiceScope scope = _scopeFactory.CreateScope();
+                            IClientRepository repository = scope.ServiceProvider.GetRequiredService<IClientRepository>();
+
+                            try
+                            {
+                                if (!await repository.ExistsByCpfAsync(record.Cpf, cancellationToken))
+                                {
+                                    Client client = new Client(record.Name, record.Cpf, record.Email);
+                                    await repository.AddAsync(client, cancellationToken);
+                                    await _monitoring.PublishReprocessedRecordsMetricAsync(1);
+                                    await _amazonSQS.DeleteMessageAsync(_deadLetterQueueUrl, dlqMessage.ReceiptHandle, cancellationToken);
+                                    await _monitoring.LogAsync("CsvQueueWorker", $"Reprocessed record {record.Cpf}", cancellationToken);
+                                }
+                                else
+                                {
+                                    await _amazonSQS.DeleteMessageAsync(_deadLetterQueueUrl, dlqMessage.ReceiptHandle, cancellationToken);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                await _monitoring.LogAsync("CsvQueueWorker", $"Error reprocessing record {record.Cpf}: {ex.Message}", cancellationToken);
+                                await _monitoring.PublishMetricAsync("Failures", 1);
+                            }
                         }
                     }
-                }
 
-                await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+                    await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+                }
             }
+            catch (Exception) { }
         }
     }
 }
