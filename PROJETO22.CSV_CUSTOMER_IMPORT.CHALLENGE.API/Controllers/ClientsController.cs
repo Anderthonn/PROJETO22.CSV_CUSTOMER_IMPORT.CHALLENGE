@@ -16,6 +16,17 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.API.Controllers
             _mediator = mediator;
         }
 
+        [HttpPost("import")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Import([FromForm] IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("CSV file is required.");
+
+            Guid requestId = await _mediator.Send(new ImportCsvCommand(file));
+            return Accepted(new { RequestId = requestId });
+        }
+
         [HttpDelete("delete")]
         public async Task<IActionResult> Delete([FromQuery] int id)
         {

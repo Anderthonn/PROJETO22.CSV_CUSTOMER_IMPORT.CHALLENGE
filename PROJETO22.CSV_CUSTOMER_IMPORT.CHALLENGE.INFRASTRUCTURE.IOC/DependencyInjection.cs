@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Amazon.S3;
+using Amazon.SQS;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.APPLICATION.Handlers.Commands;
@@ -8,6 +10,7 @@ using PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.DOMAIN.Interfaces;
 using PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Data;
 using PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Repositories;
 using PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Services;
+using PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Workers;
 
 namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.IOC
 {
@@ -22,10 +25,15 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.IOC
                 cfg.AddProfile<COMMON.Mappings.MappingProfile>();
             });
 
+            services.AddDefaultAWSOptions(configuration.GetAWSOptions("AWS"));
+            services.AddAWSService<IAmazonS3>();
+            services.AddAWSService<IAmazonSQS>();
+
             services.AddMediatR(cfg =>
             {
                 cfg.RegisterServicesFromAssembly(typeof(AddClientCommandHandler).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(DeleteClientCommandHandler).Assembly);
+                cfg.RegisterServicesFromAssembly(typeof(ImportCsvCommandHandler).Assembly);
                 cfg.RegisterServicesFromAssembly(typeof(UpdateClientCommandHandler).Assembly);
 
                 cfg.RegisterServicesFromAssembly(typeof(GetAllClientQuery).Assembly);
@@ -34,6 +42,8 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.IOC
 
             services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<ICsvProcessorService, CsvProcessorService>();
+
+            services.AddHostedService<CsvQueueWorker>();
 
             return services;
         }
