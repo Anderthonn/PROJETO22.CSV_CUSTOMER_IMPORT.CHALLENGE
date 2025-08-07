@@ -27,7 +27,7 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.APPLICATION.Handlers.Commands
             {
                 bool? existsByCpf = await _clientRepository.ExistsByCpfAsync(request.Cpf);
 
-                if (existsByCpf != true)
+                if (existsByCpf == true)
                     throw new Exception("Cpf already exists.");
 
                 Client client = new Client(request.Name, request.Cpf, request.Email);

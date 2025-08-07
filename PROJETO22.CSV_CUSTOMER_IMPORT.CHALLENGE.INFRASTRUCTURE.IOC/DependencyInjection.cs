@@ -1,4 +1,6 @@
-﻿using Amazon.S3;
+﻿using Amazon.CloudWatch;
+using Amazon.CloudWatchLogs;
+using Amazon.S3;
 using Amazon.SQS;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -28,6 +30,8 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.IOC
             services.AddDefaultAWSOptions(configuration.GetAWSOptions("AWS"));
             services.AddAWSService<IAmazonS3>();
             services.AddAWSService<IAmazonSQS>();
+            services.AddAWSService<IAmazonCloudWatch>();
+            services.AddAWSService<IAmazonCloudWatchLogs>();
 
             services.AddMediatR(cfg =>
             {
@@ -41,6 +45,8 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.IOC
             });
 
             services.AddScoped<IClientRepository, ClientRepository>();
+
+            services.AddSingleton<CloudWatchMonitoringService>();
             services.AddScoped<ICsvProcessorService, CsvProcessorService>();
 
             services.AddHostedService<CsvQueueWorker>();

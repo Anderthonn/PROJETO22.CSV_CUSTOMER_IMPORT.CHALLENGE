@@ -14,7 +14,7 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.APPLICATION.Handlers.Commands
 
         public async Task<Guid> Handle(ImportCsvCommand request, CancellationToken cancellationToken)
         {
-            return await _processor.UploadToS3AndEnqueueAsync(request.File);
+            return await _processor.UploadToS3AndEnqueueAsync(request.File, cancellationToken);
         }
     }
 }
