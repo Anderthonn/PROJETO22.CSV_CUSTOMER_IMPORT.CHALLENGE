@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.APPLICATION.Interfaces;
 using PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.COMMON.DTOs;
+using PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.COMMON.Validators;
 using PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.DOMAIN.Entities;
 using PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.DOMAIN.Interfaces;
 using System.Globalization;
@@ -23,6 +24,7 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Services
         private readonly string _bucketName;
         private readonly IClientRepository _clientRepository;
         private readonly string _queueUrl;
+        private readonly string _deadLetterQueueUrl;
         private readonly CloudWatchMonitoringService _monitoring;
 
         public CsvProcessorService(IAmazonS3 amazonS3, IAmazonSQS amazonSQS, IClientRepository clientRepository, IConfiguration configuration, CloudWatchMonitoringService monitoring)
@@ -32,6 +34,7 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Services
             _bucketName = configuration["Aws:BucketName"]!;
             _clientRepository = clientRepository;
             _queueUrl = configuration["Aws:QueueUrl"]!;
+            _deadLetterQueueUrl = configuration["Aws:DeadLetterQueueUrl"] ?? string.Empty;
             _monitoring = monitoring;
         }
 
@@ -39,6 +42,7 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Services
         {
             DateTime start = DateTime.UtcNow;
             int imported = 0;
+            List<ClientDTO> invalidRecords = new();
             await _monitoring.LogAsync("CsvProcessorService", $"Processing file {message.S3Key}", cancellationToken);
 
             try
@@ -66,6 +70,16 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Services
                 {
                     try
                     {
+                        bool cpfValid = CpfValidator.IsValid(record.Cpf);
+                        bool emailValid = EmailValidator.IsValid(record.Email);
+
+                        if (!cpfValid || !emailValid)
+                        {
+                            invalidRecords.Add(record);
+                            await _monitoring.LogAsync("CsvProcessorService", $"Invalid record - CPF: {record.Cpf}, Email: {record.Email}", cancellationToken);
+                            continue;
+                        }
+
                         if (!await _clientRepository.ExistsByCpfAsync(record.Cpf, cancellationToken))
                         {
                             Client client = new Client(record.Name, record.Cpf, record.Email);
@@ -76,6 +90,15 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Services
                     {
                         await _monitoring.LogAsync("CsvProcessorService", $"Record error: {ex.Message}", cancellationToken);
                         await _monitoring.PublishMetricAsync("Failures", 1);
+
+                        if (!string.IsNullOrEmpty(_deadLetterQueueUrl))
+                        {
+                            await _amazonSQS.SendMessageAsync(new SendMessageRequest
+                            {
+                                QueueUrl = _deadLetterQueueUrl,
+                                MessageBody = JsonSerializer.Serialize(record)
+                            }, cancellationToken);
+                        }
                     }
 
                     if (batch.Count >= batchSize)
@@ -104,7 +127,8 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Services
                 double elapsed = (DateTime.UtcNow - start).TotalMilliseconds;
                 await _monitoring.PublishMetricAsync("ProcessingTime", elapsed, StandardUnit.Milliseconds);
                 await _monitoring.PublishMetricAsync("RecordsImported", imported);
-                await _monitoring.LogAsync("CsvProcessorService", $"Processed {imported} records in {elapsed} ms", cancellationToken);
+                await _monitoring.PublishInvalidRecordsAsync(invalidRecords.Count);
+                await _monitoring.LogAsync("CsvProcessorService", $"Processed {imported} records in {elapsed} ms; skipped {invalidRecords.Count} invalid records", cancellationToken);
             }
 
             return imported;

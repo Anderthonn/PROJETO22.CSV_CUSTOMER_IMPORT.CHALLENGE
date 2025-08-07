@@ -16,7 +16,7 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.API.Controllers
             _mediator = mediator;
         }
 
-        [HttpPost("import")]
+        [HttpPost("importar")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Import([FromForm] IFormFile file)
         {

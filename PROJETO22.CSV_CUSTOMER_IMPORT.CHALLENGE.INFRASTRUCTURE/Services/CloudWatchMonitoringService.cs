@@ -47,9 +47,9 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Services
             }
         }
 
-        public Task PublishMetricAsync(string metricName, double value) => PublishMetricAsync(metricName, value, Amazon.CloudWatch.StandardUnit.Count);
+        public async Task PublishMetricAsync(string metricName, double value) => await Task.Run(() => (PublishMetricAsync(metricName, value, Amazon.CloudWatch.StandardUnit.Count)));
 
-        public Task PublishMetricAsync(string metricName, double value, Amazon.CloudWatch.StandardUnit unit)
+        public async Task<PutMetricDataResponse> PublishMetricAsync(string metricName, double value, Amazon.CloudWatch.StandardUnit unit)
         {
             MetricDatum metricDatum = new MetricDatum
             {
@@ -64,10 +64,20 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Services
                 MetricData = new List<MetricDatum> { metricDatum }
             };
 
-            return _cloudWatch.PutMetricDataAsync(putMetricDataRequest);
+            return await Task.Run(() => (_cloudWatch.PutMetricDataAsync(putMetricDataRequest)));
         }
 
-        public Task CreateFailureAlarmAsync(string alarmName)
+        public Task PublishReprocessedRecordsMetricAsync(int count)
+        {
+            return PublishMetricAsync("RecordsReprocessed", count);
+        }
+
+        public Task PublishInvalidRecordsAsync(int count)
+        {
+            return PublishMetricAsync("InvalidRecords", count);
+        }
+
+        public async Task<PutMetricAlarmResponse> CreateFailureAlarmAsync(string alarmName)
         {
             PutMetricAlarmRequest putMetricAlarmRequest = new PutMetricAlarmRequest
             {
@@ -81,10 +91,10 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Services
                 ActionsEnabled = true
             };
 
-            return _cloudWatch.PutMetricAlarmAsync(putMetricAlarmRequest);
+            return await Task.Run(() => (_cloudWatch.PutMetricAlarmAsync(putMetricAlarmRequest)));
         }
 
-        public Task CreateQueueBacklogAlarmAsync(string alarmName, string queueName, double threshold)
+        public async Task<PutMetricAlarmResponse> CreateQueueBacklogAlarmAsync(string alarmName, string queueName, double threshold)
         {
             PutMetricAlarmRequest putMetricAlarmRequest = new PutMetricAlarmRequest
             {
@@ -102,10 +112,10 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Services
                 ActionsEnabled = true
             };
 
-            return _cloudWatch.PutMetricAlarmAsync(putMetricAlarmRequest);
+            return await Task.Run(() => (_cloudWatch.PutMetricAlarmAsync(putMetricAlarmRequest)));
         }
 
-        public Task CreateExceptionAlarmAsync(string alarmName)
+        public async Task<PutMetricAlarmResponse> CreateExceptionAlarmAsync(string alarmName)
         {
             PutMetricAlarmRequest putMetricAlarmRequest = new PutMetricAlarmRequest
             {
@@ -119,7 +129,7 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Services
                 ActionsEnabled = true
             };
 
-            return _cloudWatch.PutMetricAlarmAsync(putMetricAlarmRequest);
+            return await Task.Run(() => (_cloudWatch.PutMetricAlarmAsync(putMetricAlarmRequest)));
         }
 
         private async Task EnsureLogResourcesAsync(string stream)

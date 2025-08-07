@@ -1,6 +1,6 @@
 @PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.API_HostAddress = http://localhost:5164
 
-GET {{PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.API_HostAddress}}/weatherforecast/
-Accept: application/json
+POST {{PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.API_HostAddress}}/clientes/importar
+Content-Type: multipart/form-data
 
 ###
