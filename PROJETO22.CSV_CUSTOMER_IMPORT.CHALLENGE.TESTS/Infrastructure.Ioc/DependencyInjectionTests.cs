@@ -23,20 +23,15 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.TESTS.Infrastructure.IOC
 
         public DependencyInjectionTests()
         {
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-            // se no seu IoC você usa "DefaultConnection", ajuste a chave aqui também
-            { "ConnectionStrings:DefaultConnection", "Server=(localdb)\\mssqllocaldb;Database=Test;Trusted_Connection=True;" },
-            { "AWS:Profile", "local" },
-            { "AWS:Region", "us-east-1" }
-                })
-                .Build();
+            IConfigurationRoot configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+                              {
+                                  { "ConnectionStrings:DefaultConnection", "Server=(localdb)\\mssqllocaldb;Database=Test;Trusted_Connection=True;" },
+                                  { "AWS:Profile", "local" },
+                                  { "AWS:Region", "us-east-1" }
+                              }).Build();
 
-            // ⭐ Necessário para registrar ILoggerFactory/ILogger<T>
-            _services.AddLogging(); // opcional: b => b.AddDebug().AddConsole()
+            _services.AddLogging();
 
-            // (opcional, mas ajuda em alguns cenários)
             _services.AddOptions();
 
             _services.AddInfrastructure(configuration);
@@ -55,7 +50,7 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.TESTS.Infrastructure.IOC
             Assert.Contains(_services, d => d.ServiceType == typeof(ICsvProcessorService) && d.ImplementationType == typeof(CsvProcessorService));
             Assert.Contains(_services, d => d.ServiceType == typeof(IHostedService) && d.ImplementationType == typeof(CsvQueueWorker));
 
-            var provider = _services.BuildServiceProvider();
+            ServiceProvider provider = _services.BuildServiceProvider();
             Assert.NotNull(provider.GetService<IMediator>());
             Assert.NotNull(provider.GetService<IMapper>());
         }
