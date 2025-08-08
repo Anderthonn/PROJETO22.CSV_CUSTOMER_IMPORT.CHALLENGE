@@ -10,6 +10,8 @@
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.8" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.8" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
@@ -19,9 +21,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.API\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.API.csproj" />
     <ProjectReference Include="..\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.APPLICATION\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.APPLICATION.csproj" />
     <ProjectReference Include="..\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.COMMON\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.COMMON.csproj" />
     <ProjectReference Include="..\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.DOMAIN\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.DOMAIN.csproj" />
+    <ProjectReference Include="..\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.IOC\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.IOC.csproj" />
     <ProjectReference Include="..\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE\PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.csproj" />
   </ItemGroup>
 

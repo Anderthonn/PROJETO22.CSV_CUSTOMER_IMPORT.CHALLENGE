@@ -7,7 +7,6 @@ using Amazon.S3.Model;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.COMMON.DTOs;

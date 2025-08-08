@@ -19,14 +19,14 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.API.Controllers
 
         [HttpPost("importar")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> Import([FromForm] FileUploadParameter fileUploadRequest)
+        [ProducesResponseType(typeof(object), StatusCodes.Status202Accepted)]
+        [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Import([FromForm] FileUploadParameter? fileUploadRequest, CancellationToken ct = default)
         {
-            IFormFile file = fileUploadRequest.File;
-
-            if (file == null || file.Length == 0)
+            if (fileUploadRequest?.File is null || fileUploadRequest.File.Length == 0)
                 return BadRequest("CSV file is required.");
 
-            Guid requestId = await _mediator.Send(new ImportCsvCommand(file));
+            Guid requestId = await _mediator.Send(new ImportCsvCommand(fileUploadRequest.File), ct);
             return Accepted(new { RequestId = requestId });
         }
 
