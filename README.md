@@ -21,7 +21,7 @@ Cliente → API → Amazon S3 → Amazon SQS → CsvQueueWorker → SQL Server
 ## Estrutura do código .NET
 - **DOMAIN:** entidades e interfaces de repositório (e.g., `Client` e `IClientRepository`).
 - **APPLICATION:** handlers MediatR e interfaces de serviços, responsáveis pela orquestração de casos de uso (ex.: `ImportCsvCommandHandler`).
-- **INFRASTRUCTURE:** implementação de repositórios, serviços AWS e worker de fila; configurado via `AddInfrastructure` em `Program.cs`.
+- **INFRASTRUCTURE:** implementação de repositórios, serviços AWS e worker de fila.
 - **INFRASTRUCTURE.IOC:** implementação de repositórios, serviços AWS e worker de fila; configurado via `AddInfrastructure` em `Program.cs`.
 - **API:** camada de apresentação, expondo endpoints REST e utilizando MediatR para intermediar as requisições.
 - **COMMON:** DTOs, mapeamentos e validadores reutilizáveis.
