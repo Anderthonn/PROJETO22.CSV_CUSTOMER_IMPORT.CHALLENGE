@@ -8,7 +8,7 @@
         public string Email { get; private set; } = string.Empty;
         public DateTime CreatedAt { get; private set; }
 
-        private Client() { }
+        public Client() { }
 
         public Client(string name, string cpf, string email)
         {

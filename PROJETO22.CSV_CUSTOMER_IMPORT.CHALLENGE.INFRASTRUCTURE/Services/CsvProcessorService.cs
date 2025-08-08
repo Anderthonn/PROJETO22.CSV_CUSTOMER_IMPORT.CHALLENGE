@@ -59,9 +59,13 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Services
                 CsvConfiguration config = new CsvConfiguration(CultureInfo.InvariantCulture)
                 {
                     TrimOptions = TrimOptions.Trim,
-                    IgnoreBlankLines = true
+                    IgnoreBlankLines = true,
+                    PrepareHeaderForMatch = args => (args.Header ?? string.Empty).Trim().Replace("-", string.Empty).Replace("_", string.Empty).ToLowerInvariant(),
+                    HeaderValidated = null,
+                    MissingFieldFound = null
                 };
                 using CsvReader csv = new CsvReader(reader, config);
+                csv.Context.RegisterClassMap(new ClientCsvMap());
 
                 const int batchSize = 500;
                 List<Client> batch = new List<Client>(batchSize);
@@ -157,6 +161,16 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.INFRASTRUCTURE.Services
 
             await _monitoring.LogAsync("CsvProcessorService", $"Enqueued request {requestId}", cancellationToken);
             return requestId;
+        }
+    }
+
+    internal sealed class ClientCsvMap : ClassMap<ClientDTO>
+    {
+        public ClientCsvMap()
+        {
+            Map(m => m.Name).Name("Name", "name");
+            Map(m => m.Cpf).Name("Cpf", "CPF", "cpf");
+            Map(m => m.Email).Name("Email", "E-mail", "email", "e-mail");
         }
     }
 }
