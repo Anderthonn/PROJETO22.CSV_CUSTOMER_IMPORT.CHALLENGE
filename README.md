@@ -38,7 +38,7 @@ Validação de CPF e e-mail foram isoladas em utilitários (`CpfValidator`, `Ema
 ## Configuração
 1. Clone o repositório:
    ```bash
-   git clone <url-do-repositorio>
+   git clone https://github.com/Anderthonn/PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.git
    cd PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE
    ```
 2. Edite `PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.API/appsettings.json` ou defina variáveis de ambiente com os valores:
