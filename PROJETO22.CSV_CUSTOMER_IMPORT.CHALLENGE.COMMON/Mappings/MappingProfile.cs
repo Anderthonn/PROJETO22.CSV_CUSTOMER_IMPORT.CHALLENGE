@@ -8,7 +8,7 @@ namespace PROJETO22.CSV_CUSTOMER_IMPORT.CHALLENGE.COMMON.Mappings
     {
         public MappingProfile()
         {
-            CreateMap<ClientDTO, Client>().ConstructUsing(clientDTO => new Client(clientDTO.Name, clientDTO.Cpf, clientDTO.Email));
+            CreateMap<ClientDTO, Client>().ConstructUsing(clientDTO => new Client(clientDTO.Name, clientDTO.Cpf, clientDTO.Email)).ForMember(d => d.Id, opt => opt.Ignore()).ForMember(d => d.CreatedAt, opt => opt.Ignore());
         }
     }
 }
